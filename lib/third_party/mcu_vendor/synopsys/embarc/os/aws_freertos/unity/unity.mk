@@ -1,0 +1,49 @@
+UNITY_DIR = $(AWS_FREERTOS_ROOT)/lib/third_party/unity
+
+##
+# \brief lib component related dirs
+##
+UNITY_CSRCDIR = $(UNITY_DIR)/src \
+				$(UNITY_DIR)/extras/fixture/src
+UNITY_ASMSRCDIR = $(UNITY_CSRCDIR)
+UNITY_INCDIR =	$(UNITY_DIR)/src \
+				$(UNITY_DIR)/extras/fixture/src
+
+# find all the source files in the target directories
+UNITY_CSRCS = $(call get_csrcs, $(UNITY_CSRCDIR))
+UNITY_ASMSRCS = $(call get_asmsrcs, $(UNITY_ASMSRCDIR))
+
+# get object files
+UNITY_COBJS = $(call get_aws_relobjs, $(UNITY_CSRCS))
+UNITY_ASMOBJS = $(call get_aws_relobjs, $(UNITY_ASMSRCS))
+UNITY_OBJS = $(UNITY_COBJS) $(UNITY_ASMOBJS)
+
+# get dependency files
+UNITY_DEPS = $(call get_deps, $(UNITY_OBJS))
+
+# genearte library
+AWS_LIB_UNITY = $(AWS_FREERTOS_OUT_DIR)/libunity.a
+
+# library generation rule
+$(AWS_LIB_UNITY): $(UNITY_OBJS)
+	$(TRACE_ARCHIVE)
+	$(Q)$(AR) $(AR_OPT) $@ $(UNITY_OBJS)
+
+
+AWS_FREERTOS_INCDIR += $(UNITY_INCDIR)
+AWS_FREERTOS_CSRCDIR += $(UNITY_CSRCDIR)
+AWS_FREERTOS_ASMSRCDIR += $(UNITY_ASMSRCDIR)
+
+AWS_FREERTOS_CSRCS += $(UNITY_CSRCS)
+AWS_FREERTOS_CXXSRCS +=
+AWS_FREERTOS_ASMSRCS += $(UNITY_ASMSRCS)
+AWS_FREERTOS_ALLSRCS += $(UNITY_CSRCS) $(UNITY_ASMSRCS)
+
+AWS_FREERTOS_COBJS += $(UNITY_COBJS)
+AWS_FREERTOS_CXXOBJS +=
+AWS_FREERTOS_ASMOBJS += $(UNITY_ASMOBJS)
+AWS_FREERTOS_ALLOBJS += $(UNITY_OBJS)
+
+AWS_FREERTOS_DEFINES += $(UNITY_DEFINES)
+AWS_FREERTOS_DEPS += $(UNITY_DEPS)
+AWS_FREERTOS_LIBS += $(AWS_LIB_UNITY)

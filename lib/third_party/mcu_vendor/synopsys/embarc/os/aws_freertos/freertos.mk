@@ -1,0 +1,77 @@
+##
+# \brief freertos kernel definition
+##
+FREERTOS_DIR = $(AWS_FREERTOS_ROOT)/lib/FreeRTOS
+FREERTOS_HEAP_SEL = 4
+
+##
+# \brief 		freertos port sources and includes definition
+##
+ifeq ($(LIB_SECURESHIELD_VERSION), 2)
+FREERTOS_PORT_CSRCDIR	= $(FREERTOS_DIR)/portable/Synopsys/ARC_EM_SECURESHIELD \
+				$(FREERTOS_DIR)/portable
+FREERTOS_PORT_ASMSRCDIR	= $(FREERTOS_DIR)/portable/Synopsys/ARC_EM_SECURESHIELD
+FREERTOS_PORT_INCDIR		= $(FREERTOS_DIR)/portable/Synopsys/ARC_EM_SECURESHIELD
+else
+FREERTOS_PORT_CSRCDIR	= $(FREERTOS_DIR)/portable/Synopsys/ARC \
+				$(FREERTOS_DIR)/portable
+FREERTOS_PORT_ASMSRCDIR	= $(FREERTOS_DIR)/portable/Synopsys/ARC
+FREERTOS_PORT_INCDIR		= $(FREERTOS_DIR)/portable/Synopsys/ARC
+endif
+##
+# \brief 		freertos os related source and header
+##
+FREERTOS_CSRCDIR = $(FREERTOS_PORT_CSRCDIR) $(FREERTOS_DIR)
+FREERTOS_ASMSRCDIR = $(FREERTOS_PORT_ASMSRCDIR) $(FREERTOS_DIR)
+FREERTOS_INCDIR	= $(FREERTOS_PORT_INCDIR) $(AWS_FREERTOS_ROOT)/lib/include \
+			  $(AWS_FREERTOS_ROOT)/lib/include/private
+
+# find all the source files in the target directories
+FREERTOS_CSRCS = $(call get_csrcs, $(FREERTOS_CSRCDIR))
+FREERTOS_ASMSRCS = $(call get_asmsrcs, $(FREERTOS_ASMSRCDIR))
+
+# get object files
+FREERTOS_COBJS = $(call get_aws_relobjs, $(FREERTOS_CSRCS))
+FREERTOS_ASMOBJS = $(call get_aws_relobjs, $(FREERTOS_ASMSRCS))
+FREERTOS_OBJS = $(FREERTOS_COBJS) $(FREERTOS_ASMOBJS)
+
+# get dependency files
+FREERTOS_DEPS = $(call get_deps, $(FREERTOS_OBJS))
+
+# extra macros to be defined
+FREERTOS_DEFINES = -DFREERTOS_HEAP_SEL=$(FREERTOS_HEAP_SEL)
+
+ifeq ($(DEBUG), 1)
+	FREERTOS_DEFINES += -DconfigGENERATE_RUN_TIME_STATS=1
+endif
+
+# genearte library
+AWS_LIB_FREERTOS = $(AWS_FREERTOS_OUT_DIR)/libawsfreertos.a
+
+# library generation rule
+$(AWS_LIB_FREERTOS): $(FREERTOS_OBJS)
+	$(TRACE_ARCHIVE)
+	$(Q)$(AR) $(AR_OPT) $@ $(FREERTOS_OBJS)
+
+# specific compile rules
+# user can add rules to compile this OS
+# if not rules specified to this OS, it will use default compiling rules
+
+# OS Definitions
+AWS_FREERTOS_INCDIR += $(FREERTOS_INCDIR)
+AWS_FREERTOS_CSRCDIR += $(FREERTOS_CSRCDIR)
+AWS_FREERTOS_ASMSRCDIR += $(FREERTOS_ASMSRCDIR)
+
+AWS_FREERTOS_CSRCS += $(FREERTOS_CSRCS)
+AWS_FREERTOS_CXXSRCS +=
+AWS_FREERTOS_ASMSRCS += $(FREERTOS_ASMSRCS)
+AWS_FREERTOS_ALLSRCS += $(FREERTOS_CSRCS) $(FREERTOS_ASMSRCS)
+
+AWS_FREERTOS_COBJS += $(FREERTOS_COBJS)
+AWS_FREERTOS_CXXOBJS +=
+AWS_FREERTOS_ASMOBJS += $(FREERTOS_ASMOBJS)
+AWS_FREERTOS_ALLOBJS += $(FREERTOS_OBJS)
+
+AWS_FREERTOS_DEFINES += $(FREERTOS_DEFINES)
+AWS_FREERTOS_DEPS += $(FREERTOS_DEPS)
+AWS_FREERTOS_LIBS += $(AWS_LIB_FREERTOS)
